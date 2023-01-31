@@ -109,19 +109,44 @@ pub struct Activation<const N: usize>;
 
 impl<const N: usize> Activation<N> {
     #![allow(unused_variables)]
-    
+
     /// Performs the sigmoid (logistic) activation function on the vector given.
     pub fn sigmoid(vector: Vector<N>) -> Vector<N> {
-        todo!()
+        let mut output = Vector::<N>::zero();
+
+        for i in 0..N {
+            output[i] = 1.0/(1.0 + (-vector[i]).exp());
+        }
+
+        output
     }
 
     /// Performs the ReLU activation function on the vector given.
     pub fn relu(vector: Vector<N>) -> Vector<N> {
-        todo!()
+        let mut output = Vector::<N>::zero();
+
+        for i in 0..N {
+            if vector[i] >= 0.0 {
+                output[i] = vector[i];
+            }
+        }
+
+        output
     }
 
     /// Performs the softmax activation function on the vector given.
     pub fn softmax(vector: Vector<N>) -> Vector<N> {
-        todo!()
+        let mut output = Vector::<N>::zero();
+        let mut total: f64 = 0.0;
+
+        for i in 0..N {
+            total += vector[i].exp();
+        }
+
+        for i in 0..N {
+            output[i] = vector[i].exp()/total;
+        }
+
+        output
     }
 }
