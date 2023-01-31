@@ -108,18 +108,20 @@ fn multiply_matrix_and_vector() {
 pub struct Activation<const N: usize>;
 
 impl<const N: usize> Activation<N> {
+    #![allow(unused_variables)]
+    
     /// Performs the sigmoid (logistic) activation function on the vector given.
-    pub fn sigmoid(&self) -> Self {
+    pub fn sigmoid(vector: Vector<N>) -> Vector<N> {
         todo!()
     }
 
     /// Performs the ReLU activation function on the vector given.
-    pub fn relu(&self) -> Self {
+    pub fn relu(vector: Vector<N>) -> Vector<N> {
         todo!()
     }
 
     /// Performs the softmax activation function on the vector given.
-    pub fn softmax(&self) -> Self {
+    pub fn softmax(vector: Vector<N>) -> Vector<N> {
         todo!()
     }
 }
