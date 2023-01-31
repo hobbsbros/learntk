@@ -108,8 +108,6 @@ fn multiply_matrix_and_vector() {
 pub struct Activation<const N: usize>;
 
 impl<const N: usize> Activation<N> {
-    #![allow(unused_variables)]
-
     /// Performs the sigmoid (logistic) activation function on the vector given.
     pub fn sigmoid(vector: Vector<N>) -> Vector<N> {
         let mut output = Vector::<N>::zero();
