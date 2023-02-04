@@ -1,8 +1,11 @@
 //! Linear algebra package for LearnTK.
 
-use std::ops::{
-    Index,
-    IndexMut,
+use std::{
+    ops::{
+        Index,
+        IndexMut,
+        Add,
+    },
 };
 
 use rand::random;
@@ -27,6 +30,21 @@ impl<const N: usize> IndexMut<usize> for Vector<N> {
     }
 }
 
+/// Implements addition of two vectors.
+impl<const N: usize> Add for Vector<N> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        let mut output = Self::zero();
+
+        for i in 0..N {
+            output[i] = self[i] + other[i];
+        }
+
+        output
+    }
+}
+
 impl<const N: usize> Vector<N> {
     /// Constructs a new vector.
     pub fn new(values: [f64; N]) -> Self {
@@ -36,6 +54,17 @@ impl<const N: usize> Vector<N> {
     /// Constructs a new zero vector.
     pub fn zero() -> Self {
         Self ([0.0; N])
+    }
+
+    /// Constructs a new, random vector.
+    pub fn random() -> Self {
+        let mut output = [0.0f64; N];
+
+        for i in 0..N {
+            output[i] = 2.0*random::<f64>() - 1.0;
+        }
+
+        Self (output)
     }
 }
 
