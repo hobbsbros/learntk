@@ -136,7 +136,7 @@ impl<const X: usize, const Y: usize> TrainingDataset<X, Y> {
 
 #[test]
 fn import_dataset() {
-    let dataset = TrainingDataset::<3, 1>::import("data.nntd");
+    let dataset = TrainingDataset::<3, 3>::import("iris.nntd");
     dbg!(dataset);
 }
 
