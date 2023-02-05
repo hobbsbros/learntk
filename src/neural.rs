@@ -2,6 +2,8 @@
 
 use std::fs;
 
+use indicatif::ProgressIterator;
+
 #[allow(unused_imports)]
 use crate::linalg::{
     Vector,
@@ -192,7 +194,7 @@ impl<const X: usize, const H: usize, const Y: usize> Network<X, H, Y> {
     }
 
     /// Train this network based on an input and an expected output.
-    pub fn train(&mut self, input: Vector<X>, expected: Vector<Y>) -> f64 {
+    pub fn train_once(&mut self, input: Vector<X>, expected: Vector<Y>) -> f64 {
         let output = self.evaluate(input);
         let error = output - expected;
         self.backpropagate(error);
@@ -206,30 +208,35 @@ impl<const X: usize, const H: usize, const Y: usize> Network<X, H, Y> {
         let mut cost: f64 = 0.0;
 
         for &(input, expected) in &data {
-            cost += self.train(input, expected);
+            cost += self.train_once(input, expected);
         }
         
         cost/(data.len() as f64)
+    }
+
+    /// Train this network based on a dataset for a given number of generations.
+    pub fn train(&mut self, dataset: TrainingDataset<X, Y>, generations: usize) {
+        println!("Training network...");
+        for _ in (0..generations).progress() {
+            let _ = self.train_all(dataset.clone());
+        }
     }
 }
 
 #[test]
 fn train_network() {
-    let mut network = Network::<3, 3, 3>::new(
-        Box::new(Sigmoid::<3>),
+    let mut network = Network::<3, 6, 3>::new(
+        Box::new(Sigmoid::<6>),
         Box::new(Sigmoid::<3>),
         0.01,
     );
 
-    // network.add_hidden_layer(Box::new(Sigmoid::<6>));
+    network.add_hidden_layer(Box::new(Sigmoid::<6>));
     // network.add_hidden_layer(Box::new(Sigmoid::<6>));
 
     let dataset = TrainingDataset::<3, 3>::import("iris.nntd");
 
-    for _ in 0..1000 {
-        let cost = network.train_all(dataset.clone());
-        println!("Cost: {}", cost);
-    }
+    network.train(dataset, 1000);
 
     let vector = Vector::new([5.1, 3.5, 1.4]);
     dbg!(network.evaluate(vector));

@@ -10,4 +10,5 @@ name = "learntk"
 path = "src/lib.rs"
 
 [dependencies]
+indicatif = "0.17.3"
 rand = "0.8.5"
