@@ -94,7 +94,18 @@ impl<const N: usize> Vector<N> {
         Self (output)
     }
 
-    /// Right-multiplies this vector by< the transpose of the input, constructing a matrix.
+    /// Right-multiplies this vector according to the Hadamard product.
+    pub fn mult(&self, other: Self) -> Self {
+        let mut output = Self::zero();
+
+        for i in 0..N {
+            output[i] = self[i]*other[i];
+        }
+
+        output
+    }
+
+    /// Right-multiplies this vector by the transpose of the input, constructing a matrix.
     pub fn transpose_mult<const M: usize>(&self, other: Vector<M>) -> Matrix<N, M> {
         let mut output = Matrix::<N, M>::zero();
 
@@ -263,7 +274,7 @@ impl<const N: usize> Activation<N> for Sigmoid<N> {
         let mut output = Vector::<N>::zero();
 
         for i in 0..N {
-            output[i] = 1.0/(1.0 + (-vector[i].clamp(-400.0, 400.0)).exp());
+            output[i] = 1.0/(1.0 + (-vector[i].clamp(-100.0, 100.0)).exp());
         }
 
         output

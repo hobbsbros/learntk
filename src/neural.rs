@@ -27,7 +27,7 @@ impl<const N: usize, const M: usize> Layer<N, M> {
     pub fn new(activation: Box<dyn Activation<M>>, learning_rate: f64) -> Self {
         Self {
             weights: Matrix::<M, N>::random(),
-            biases: Vector::<M>::zero(),
+            biases: Vector::<M>::random(),
             activation,
             learning_rate,
             input: Vector::<N>::zero(),
@@ -43,22 +43,24 @@ impl<const N: usize, const M: usize> Layer<N, M> {
     }
 
     /// Adjusts this layer's weights and biases based on an error signal.
-    pub fn backpropagate(&mut self, error: Vector<M>) -> Vector<N> {
+    pub fn backpropagate(&mut self, next_error: Vector<M>) -> Vector<N> {
         // This is the error of the raw output of this layer
-        let raw_error = self.activation.backpropagate(error);
+        let error = next_error.mult(self.activation.backpropagate(self.output));
 
         // This is the change that should be made to the weight matrix
-        let weight_adjust = raw_error.transpose_mult(self.input).scaled(self.learning_rate);
+        let weight_adjust = error.transpose_mult(self.input).scaled(self.learning_rate);
 
         // No bias adjustment yet (to be implemented)
-
-        // This is the error signal to be propagated to the next layer
-        let next_error = self.weights.transposed().mult(error);
+        let bias_adjust = error;
 
         // Should this be added or subtracted?
         self.weights = self.weights - weight_adjust;
+        self.biases = self.biases - bias_adjust;
 
-        next_error
+        // This is the error signal to be propagated to the previous layer
+        let prev_error = self.weights.transposed().mult(error);
+
+        prev_error
     }
 }
 
@@ -213,18 +215,18 @@ impl<const X: usize, const H: usize, const Y: usize> Network<X, H, Y> {
 
 #[test]
 fn train_network() {
-    let mut network = Network::<3, 6, 3>::new(
-        Box::new(Sigmoid::<6>),
+    let mut network = Network::<3, 3, 3>::new(
+        Box::new(Sigmoid::<3>),
         Box::new(Sigmoid::<3>),
         0.01,
     );
 
-    network.add_hidden_layer(Box::new(Sigmoid::<6>));
-    network.add_hidden_layer(Box::new(Sigmoid::<6>));
+    // network.add_hidden_layer(Box::new(Sigmoid::<6>));
+    // network.add_hidden_layer(Box::new(Sigmoid::<6>));
 
     let dataset = TrainingDataset::<3, 3>::import("iris.nntd");
 
-    for _ in 0..100 {
+    for _ in 0..1000 {
         let cost = network.train_all(dataset.clone());
         println!("Cost: {}", cost);
     }
