@@ -131,8 +131,8 @@ impl<const X: usize, const Y: usize> TrainingDataset<X, Y> {
     }
 
     /// Yields the raw data from this dataset.
-    pub fn yield_data(&self) -> Vec<(Vector<X>, Vector<Y>)> {
-        self.data.to_owned()
+    pub fn yield_data(&self) -> &Vec<(Vector<X>, Vector<Y>)> {
+        &self.data
     }
 }
 
@@ -202,12 +202,12 @@ impl<const X: usize, const H: usize, const Y: usize> Network<X, H, Y> {
     }
 
     /// Train this network based on a list of inputs and expected outputs.
-    pub fn train_all(&mut self, dataset: TrainingDataset<X, Y>) -> f64 {
+    pub fn train_all(&mut self, dataset: &TrainingDataset<X, Y>) -> f64 {
         let data = dataset.yield_data();
 
         let mut cost: f64 = 0.0;
 
-        for &(input, expected) in &data {
+        for &(input, expected) in data {
             cost += self.train_once(input, expected);
         }
         
@@ -215,10 +215,10 @@ impl<const X: usize, const H: usize, const Y: usize> Network<X, H, Y> {
     }
 
     /// Train this network based on a dataset for a given number of generations.
-    pub fn train(&mut self, dataset: TrainingDataset<X, Y>, generations: usize) {
+    pub fn train(&mut self, dataset: &TrainingDataset<X, Y>, generations: usize) {
         println!("Training network...");
         for _ in (0..generations).progress() {
-            let _ = self.train_all(dataset.clone());
+            let _ = self.train_all(dataset);
         }
     }
 }
@@ -232,11 +232,11 @@ fn train_network() {
     );
 
     network.add_hidden_layer(Box::new(Sigmoid::<6>));
-    // network.add_hidden_layer(Box::new(Sigmoid::<6>));
+    network.add_hidden_layer(Box::new(Sigmoid::<6>));
 
     let dataset = TrainingDataset::<3, 3>::import("iris.nntd");
 
-    network.train(dataset, 1000);
+    network.train(&dataset, 4000);
 
     let vector = Vector::new([5.1, 3.5, 1.4]);
     dbg!(network.evaluate(vector));
