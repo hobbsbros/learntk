@@ -5,6 +5,7 @@ use std::{
         Index,
         IndexMut,
         Add,
+        Sub,
     },
 };
 
@@ -45,10 +46,36 @@ impl<const N: usize> Add for Vector<N> {
     }
 }
 
+/// Implements subtraction of two vectors.
+impl<const N: usize> Sub for Vector<N> {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        let mut output = Self::zero();
+
+        for i in 0..N {
+            output[i] = self[i] - other[i];
+        }
+
+        output
+    }
+}
+
 impl<const N: usize> Vector<N> {
     /// Constructs a new vector.
     pub fn new(values: [f64; N]) -> Self {
         Self (values)
+    }
+
+    /// Constructs a new vector from a `Vec<f64>`.
+    pub fn from(values: Vec<f64>) -> Self {
+        let mut output = [0.0f64; N];
+
+        for i in 0..values.len() {
+            output[i] = values[i];
+        }
+
+        Self (output)
     }
 
     /// Constructs a new zero vector.
@@ -65,6 +92,30 @@ impl<const N: usize> Vector<N> {
         }
 
         Self (output)
+    }
+
+    /// Right-multiplies this vector by< the transpose of the input, constructing a matrix.
+    pub fn transpose_mult<const M: usize>(&self, other: Vector<M>) -> Matrix<N, M> {
+        let mut output = Matrix::<N, M>::zero();
+
+        for i in 0..N {
+            for j in 0..M {
+                output[(i, j)] = self[i]*other[j];
+            }
+        }
+
+        output
+    }
+
+    /// Computes the magnitude of this vector.
+    pub fn norm(&self) -> f64 {
+        let mut output: f64 = 0.0;
+
+        for i in 0..N {
+            output += self[i]*self[i];
+        }
+
+        (output/(N as f64)).max(0.0).sqrt()
     }
 }
 
@@ -88,6 +139,40 @@ impl<const N: usize, const M: usize> IndexMut<(usize, usize)> for Matrix<N, M> {
     }
 }
 
+/// Implements addition of two matrices.
+impl<const N: usize, const M: usize> Add for Matrix<N, M> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        let mut output = Self::zero();
+
+        for i in 0..N {
+            for j in 0..M {
+                output[(i, j)] = self[(i, j)] + other[(i, j)];
+            }
+        }
+
+        output
+    }
+}
+
+/// Implements subtraction of two matrices.
+impl<const N: usize, const M: usize> Sub for Matrix<N, M> {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        let mut output = Self::zero();
+
+        for i in 0..N {
+            for j in 0..M {
+                output[(i, j)] = self[(i, j)] - other[(i, j)];
+            }
+        }
+
+        output
+    }
+}
+
 impl<const N: usize, const M: usize> Matrix<N, M> {
     /// Constructs a new matrix.
     pub fn new(values: [[f64; M]; N]) -> Self {
@@ -101,15 +186,28 @@ impl<const N: usize, const M: usize> Matrix<N, M> {
 
     /// Constructs a new, random matrix.
     pub fn random() -> Self {
-        let mut output = [[0.0f64; M]; N];
+        let mut output = Self::zero();
 
         for i in 0..N {
             for j in 0..M {
-                output[j][i] = 2.0*random::<f64>() - 1.0;
+                output[(i, j)] = 2.0*random::<f64>() - 1.0;
             }
         }
 
-        Self (output)
+        output
+    }
+
+    /// Scales this matrix by a scalar.
+    pub fn scaled(&self, scalar: f64) -> Self {
+        let mut output = Self::zero();
+
+        for i in 0..N {
+            for j in 0..M {
+                output[(i, j)] = scalar*self[(i, j)];
+            }
+        }
+
+        output
     }
 
     /// Right-multiplies this matrix by a vector, returning a vector.
@@ -165,7 +263,7 @@ impl<const N: usize> Activation<N> for Sigmoid<N> {
         let mut output = Vector::<N>::zero();
 
         for i in 0..N {
-            output[i] = 1.0/(1.0 + (-vector[i]).exp());
+            output[i] = 1.0/(1.0 + (-vector[i].clamp(-400.0, 400.0)).exp());
         }
 
         output
@@ -173,7 +271,13 @@ impl<const N: usize> Activation<N> for Sigmoid<N> {
 
     /// Performs the sigmoid (logistic) backpropagation function on the vector given.
     fn backpropagate(&self, vector: Vector<N>) -> Vector<N> {
-        todo!()
+        let mut output = Vector::<N>::zero();
+
+        for i in 0..N {
+            output[i] = vector[i]*(1.0 - vector[i]);
+        }
+
+        output
     }
 }
 
@@ -196,7 +300,17 @@ impl<const N: usize> Activation<N> for ReLU<N> {
 
     /// Performs the ReLU backpropagation function on the vector given.
     fn backpropagate(&self, vector: Vector<N>) -> Vector<N> {
-        todo!()
+        let mut output = Vector::<N>::zero();
+
+        for i in 0..N {
+            if vector[i] >= 0.0 {
+                output[i] = 1.0;
+            } else {
+                output[i] = 0.0;
+            }
+        }
+
+        output
     }
 }
 
@@ -220,6 +334,7 @@ impl<const N: usize> Activation<N> for Softmax<N> {
         output
     }
 
+    #[allow(unused_variables)]
     /// Performs the softmax backpropagation function on the vector given.
     fn backpropagate(&self, vector: Vector<N>) -> Vector<N> {
         todo!()
