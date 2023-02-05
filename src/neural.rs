@@ -210,3 +210,25 @@ impl<const X: usize, const H: usize, const Y: usize> Network<X, H, Y> {
         cost/(data.len() as f64)
     }
 }
+
+#[test]
+fn train_network() {
+    let mut network = Network::<3, 6, 3>::new(
+        Box::new(Sigmoid::<6>),
+        Box::new(Sigmoid::<3>),
+        0.01,
+    );
+
+    network.add_hidden_layer(Box::new(Sigmoid::<6>));
+    network.add_hidden_layer(Box::new(Sigmoid::<6>));
+
+    let dataset = TrainingDataset::<3, 3>::import("iris.nntd");
+
+    for _ in 0..100 {
+        let cost = network.train_all(dataset.clone());
+        println!("Cost: {}", cost);
+    }
+
+    let vector = Vector::new([5.1, 3.5, 1.4]);
+    dbg!(network.evaluate(vector));
+}
