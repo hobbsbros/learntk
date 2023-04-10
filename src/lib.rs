@@ -7,6 +7,7 @@ pub use linalg::{
     Sigmoid,
     ReLU,
     Softmax,
+    Vector,
 };
 
 pub use neural::{
