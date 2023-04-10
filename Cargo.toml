@@ -2,7 +2,7 @@
 name = "learntk"
 description = "A simple machine learning toolkit, written in Rust."
 license = "MIT"
-documentation = "docs.rs/learntk"
+documentation = "http://docs.rs/learntk"
 version = "0.2.1"
 edition = "2021"
 
