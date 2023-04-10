@@ -10,5 +10,6 @@ pub use linalg::{
 };
 
 pub use neural::{
+    TrainingDataset,
     Network,
 };
